@@ -1,20 +1,25 @@
 -- CONSTANTS
-BALL_SIZE = 50
-PADDLE_HEIGHT = 100
-PADDLE_THICKNESS = BALL_SIZE
-PADDLE_PADDING = 2*BALL_SIZE
+local BALL_SIZE = 50
+local PADDLE_HEIGHT = 100
+local PADDLE_THICKNESS = BALL_SIZE
+local PADDLE_PADDING = 2*BALL_SIZE
 -- VARIABLES
-ball_x,ball_y = 100,100 -- Initial Ball Position
-ball_dx,ball_dy = 500,500 -- Derivative for movement
-paddle_left_y = 0
-paddle_right_y =0
+local ball_x,ball_y = 100,100 -- Initial Ball Position
+local ball_dx,ball_dy = 500,500 -- Derivative for movement
+local paddle_left_y = 0
+local paddle_right_y = 0
+local dividerSegments = 21
+local dividerWidth = 5 
 
 function love.draw()
+    love.graphics.print("Hello World", 400,400)
     --Store Window Size
     local window_width_draw = love.graphics.getWidth()
     local window_height_draw = love.graphics.getHeight()
-    love.graphics.clear(0x18/255,0x18/255,0x18/255,1) -- RGBA Diving by 255 maps 0-255 bytes to LOVE's 0-1 range.
-    love.graphics.print("Hello World", 400,400)
+    -- Draw Background
+    love.graphics.clear(0x25/255,0x30/255,0x25/255,1) -- RGBA Diving by 255 maps 0-255 bytes to LOVE's 0-1 range.
+    -- Draw Divider : Note LUA is inclusive. Thus Numeric if for loop includes both start and end.
+    drawDivider(dividerSegments,window_width_draw,window_height_draw)
     -- Draw Ball
     love.graphics.rectangle("fill",ball_x,ball_y,BALL_SIZE,BALL_SIZE) -- Mode is fill or line
     -- Draw Paddle Left and Right Paddles
@@ -48,4 +53,15 @@ function love.update(dt)
     ball_y = ball_y + ball_dy*dt
 end --END UPDATE FUNCTION
 
-    
+function drawDivider(segments,window_width,window_height)
+    --There are n equal segments we only draw every other piece. 
+    local segment_length = window_height/segments
+    local middle_of_window_x = window_width/2
+    --Print every other line for perforated effect.
+    for i = 0, segments - 1 do
+        if i%2 == 0 then
+            love.graphics.setLineWidth(dividerWidth)
+            love.graphics.line(middle_of_window_x,i*segment_length,middle_of_window_x,(i+1)*segment_length)
+        end
+    end
+end
