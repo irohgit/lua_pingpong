@@ -8,6 +8,7 @@ local ball_x,ball_y = 100,100 -- Initial Ball Position
 local ball_dx,ball_dy = 500,500 -- Derivative for movement
 local paddle_left_y = 0
 local paddle_right_y = 0
+local paddle_speed = 100
 local dividerSegments = 21
 local dividerWidth = 5 
 
@@ -51,6 +52,19 @@ function love.update(dt)
     --JOB 1: Recalculate ball position based on dx and deltaTime
     ball_x = ball_x + ball_dx*dt
     ball_y = ball_y + ball_dy*dt
+    if love.keyboard.isDown("s") then
+       paddle_left_y = paddle_left_y + paddle_speed*dt 
+    end
+    if love.keyboard.isDown("w") then
+       paddle_left_y = paddle_left_y - paddle_speed*dt 
+    end
+    
+    if love.keyboard.isDown("down") then
+       paddle_right_y = paddle_right_y + paddle_speed*dt 
+    end
+    if love.keyboard.isDown("up") then
+       paddle_right_y = paddle_right_y - paddle_speed*dt 
+    end
 end --END UPDATE FUNCTION
 
 function drawDivider(segments,window_width,window_height)
@@ -65,3 +79,5 @@ function drawDivider(segments,window_width,window_height)
         end
     end
 end
+
+
