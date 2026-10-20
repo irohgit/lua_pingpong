@@ -22,14 +22,12 @@ In Lua, libraries such as Table is already global. Or we use the keyword "requir
 --]]
 --Developer Tools: 
 function drawDebug()
-
     local lines = {
-       "FPS:"..love.timer.getFPS() 
+       "FPS: "..love.timer.getFPS(),
+       "BALL_POSITION: "..string.format("%.0f,%.0f",ball_x,ball_y),
+       "CONTROLLERS_CONNECTED: "..string.format("%s",love.joystick.getJoystickCount()).." "..(joystick and joystick:getName() or "none"),
     }
-    love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
-    love.graphics.print(string.format("Ball_Position: %.0f,%.0f",ball_x,ball_y),10,30)
-    love.graphics.printf("test",10,50,window_width,"left")
-    love.graphics.printf("FPS:60".."\n".."Ball:100,100".."\n".."Joystick: none",10,70,window_width,"left")
+    love.graphics.printf(table.concat(lines,"\n"),10,10,window_width,"left")
 end
 --Player/s Control Setup
 function love.load()
