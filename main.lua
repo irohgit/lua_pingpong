@@ -16,6 +16,10 @@ local joystick = nil
 local window_width_draw = love.graphics.getWidth()
 local window_height_draw = love.graphics.getHeight()
 
+--[[ LUA NOTES
+Lua finds names at runtime, (looked up when the line runs).
+In Lua, libraries such as Table is already global. Or we use the keyword "require". THis is different to c++ when we #include things.
+--]]
 --Developer Tools: 
 function drawDebug()
 
