@@ -3,8 +3,10 @@ local BALL_SIZE = 50
 local PADDLE_HEIGHT = 100
 local PADDLE_THICKNESS = BALL_SIZE
 local PADDLE_PADDING = 2*BALL_SIZE
-local DEBUG_MODE = true
+local DEBUG_MODE = true -- Master DEBUG Gate: Set to false when releasing
 -- VARIABLES
+local debug_view = false -- Debug Overlay
+
 local ball_x,ball_y = 100,100 -- Initial Ball Position
 local ball_dx,ball_dy = 500,500 -- Derivative for movement
 local paddle_left_y = 0
@@ -16,11 +18,22 @@ local joystick = nil
 local window_width_draw = love.graphics.getWidth()
 local window_height_draw = love.graphics.getHeight()
 
+--HELPER FUNCTIONS
+local function debugOnly(fn,...)
+    if DEBUG_MODE and debug_view then return fn(...) end
+end
+
 --[[ LUA NOTES
 Lua finds names at runtime, (looked up when the line runs).
 In Lua, libraries such as Table is already global. Or we use the keyword "require". THis is different to c++ when we #include things.
 --]]
 --Developer Tools: 
+function love.keypressed(key)
+    if key == "f1" and DEBUG_MODE then
+        debug_view = not debug_view
+    end
+end
+
 function drawDebug()
     local lines = {
        "FPS: "..love.timer.getFPS(),
@@ -49,7 +62,8 @@ function love.draw()
     love.graphics.rectangle("fill",paddle_left_x,paddle_left_y,PADDLE_THICKNESS, PADDLE_HEIGHT)
     local paddle_right_x = window_width_draw - PADDLE_PADDING - PADDLE_THICKNESS
     love.graphics.rectangle("fill",paddle_right_x,paddle_right_y,PADDLE_THICKNESS, PADDLE_HEIGHT)
-    drawDebug()
+
+    debugOnly(drawDebug)
 end
 
 function love.update(dt)
@@ -101,5 +115,4 @@ function drawDivider(segments,window_width,window_height)
         end
     end
 end
-
 
