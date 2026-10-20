@@ -13,11 +13,19 @@ local paddle_speed = 100
 local dividerSegments = 21
 local dividerWidth = 5 
 local joystick = nil
+local window_width_draw = love.graphics.getWidth()
+local window_height_draw = love.graphics.getHeight()
 
 --Developer Tools: 
 function drawDebug()
-    --Draw one fps line
+
+    local lines = {
+       "FPS:"..love.timer.getFPS() 
+    }
     love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
+    love.graphics.print(string.format("Ball_Position: %.0f,%.0f",ball_x,ball_y),10,30)
+    love.graphics.printf("test",10,50,window_width,"left")
+    love.graphics.printf("FPS:60".."\n".."Ball:100,100".."\n".."Joystick: none",10,70,window_width,"left")
 end
 --Player/s Control Setup
 function love.load()
@@ -28,8 +36,6 @@ end
 function love.draw()
     love.graphics.print("Hello World", 400,400)
     --Store Window Size
-    local window_width_draw = love.graphics.getWidth()
-    local window_height_draw = love.graphics.getHeight()
     -- Draw Background
     love.graphics.clear(0x25/255,0x30/255,0x25/255,1) -- RGBA Diving by 255 maps 0-255 bytes to LOVE's 0-1 range.
     -- Draw Divider : Note LUA is inclusive. Thus Numeric if for loop includes both start and end.
