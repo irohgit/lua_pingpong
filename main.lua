@@ -3,6 +3,7 @@ local BALL_SIZE = 50
 local PADDLE_HEIGHT = 100
 local PADDLE_THICKNESS = BALL_SIZE
 local PADDLE_PADDING = 2*BALL_SIZE
+local DEBUG_MODE = true
 -- VARIABLES
 local ball_x,ball_y = 100,100 -- Initial Ball Position
 local ball_dx,ball_dy = 500,500 -- Derivative for movement
@@ -11,7 +12,19 @@ local paddle_right_y = 0
 local paddle_speed = 100
 local dividerSegments = 21
 local dividerWidth = 5 
+local joystick = nil
 
+--Developer Tools: 
+function drawDebug()
+    --Draw one fps line
+    love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
+end
+--Player/s Control Setup
+function love.load()
+    local joysticks = love.joystick.getJoysticks()
+    joystick = joysticks[1]
+    print(joystick)
+end
 function love.draw()
     love.graphics.print("Hello World", 400,400)
     --Store Window Size
@@ -28,6 +41,7 @@ function love.draw()
     love.graphics.rectangle("fill",paddle_left_x,paddle_left_y,PADDLE_THICKNESS, PADDLE_HEIGHT)
     local paddle_right_x = window_width_draw - PADDLE_PADDING - PADDLE_THICKNESS
     love.graphics.rectangle("fill",paddle_right_x,paddle_right_y,PADDLE_THICKNESS, PADDLE_HEIGHT)
+    drawDebug()
 end
 
 function love.update(dt)
