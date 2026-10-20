@@ -52,10 +52,19 @@ Lua finds names at runtime, (looked up when the line runs).
 In Lua, libraries such as Table is already global. Or we use the keyword "require". THis is different to c++ when we #include things.
 --]]
 --Developer Tools: 
-function love.keypressed(key)
-    if key == "f1" and DEBUG_MODE then
+
+local function toggleDebug()
+    if DEBUG_MODE then
         debug_view = not debug_view
     end
+end
+
+function love.keypressed(key)
+    if key == "f1" then toggleDebug() end
+end
+
+function love.gamepadpressed(joystick,button)
+    if button == "back" then toggleDebug() end
 end
 
 function drawDebug()
@@ -153,7 +162,7 @@ function getInputDirection(up_key,down_key,gamepad) -- Returns direction (number
         direction = direction - 1
     end
     return direction
-end
+end -- END getInputDirection Function
 
 function movePaddle(y,direction, dt, window_height) -- -> number
     return clamp(y + direction * PADDLE_SPEED *dt,0,window_height - PADDLE_HEIGHT)
