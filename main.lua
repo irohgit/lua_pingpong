@@ -105,43 +105,13 @@ function love.draw()
 end
 
 function love.update(dt)
-    --JOB 0:
     window_width = love.graphics.getWidth()
     window_height = love.graphics.getHeight()
-    --JOB : Update the ball's x position 
-    local ball_newx = ball_x + ball_dx * dt * BALL_SPEED 
-    local hits_paddle = hitPaddle(getBallRect(ball_newx,ball_y), window_width)
-    local passed_right_edge = ball_newx + BALL_SIZE > window_width
-    local passed_left_edge = ball_newx < 0 
-    
-    if hits_paddle then
-        ball_dx = -ball_dx
-    elseif passed_left_edge then
-        ball_dx = -ball_dx
-    elseif passed_right_edge then
-        ball_dx = -ball_dx
-    else
-        ball_x = ball_newx
-    end
 
-    
-    --JOB : Update the ball's y position 
-    local ball_newy = ball_y + ball_dy*dt*BALL_SPEED
-    local hit_ceiling = ball_newy < 0
-    local hit_floor = ball_newy + BALL_SIZE >= window_height
-    local hit_paddle = hitPaddle(getBallRect(ball_x,ball_newy),window_width)
+    updateBallX(dt)
+    updateBallY(dt)
+    updatePaddles(dt)
 
-    if hit_ceiling or hit_floor or hit_paddle then
-        ball_dy = -ball_dy -- Bounce Vertically
-    else
-        ball_y = ball_newy
-    end
-
-    -- TODO: ball collision with the paddles 
-    -- TODO: score system
-    -- INPUT
-    paddle_left_y = movePaddle(paddle_left_y,getInputDirection("w","s",joystick_left),dt,window_height)
-    paddle_right_y = movePaddle(paddle_right_y,getInputDirection("up","down",joystick_right),dt,window_height)
 end 
 --END UPDATE FUNCTION
 
@@ -224,4 +194,38 @@ end
 
 function hitPaddle(ballRect, window_width)
     return checkCollision(ballRect,getLeftPaddleRect()) or checkCollision(ballRect,getRightPaddleRect(window_width))
+end
+
+function updateBallX(dt)
+    local ball_newx = ball_x + ball_dx * dt * BALL_SPEED 
+    local hit_paddle = hitPaddle(getBallRect(ball_newx,ball_y), window_width)
+    local passed_right_edge = ball_newx + BALL_SIZE > window_width
+    local passed_left_edge = ball_newx < 0 
+    
+    if hit_paddle then
+        ball_dx = -ball_dx
+    elseif passed_left_edge then
+        ball_dx = -ball_dx
+    elseif passed_right_edge then
+        ball_dx = -ball_dx
+    else
+        ball_x = ball_newx
+    end
+end
+
+function updateBallY(dt)
+    local ball_newy = ball_y + ball_dy*dt*BALL_SPEED
+    local hit_ceiling = ball_newy < 0
+    local hit_floor = ball_newy + BALL_SIZE >= window_height
+    local hit_paddle = hitPaddle(getBallRect(ball_x,ball_newy),window_width)
+
+    if hit_ceiling or hit_floor or hit_paddle then
+        ball_dy = -ball_dy -- Bounce Vertically
+    else
+        ball_y = ball_newy
+    end
+end
+function updatePaddles(dt)
+    paddle_left_y = movePaddle(paddle_left_y,getInputDirection("w","s",joystick_left),dt,window_height)
+    paddle_right_y = movePaddle(paddle_right_y,getInputDirection("up","down",joystick_right),dt,window_height)
 end
