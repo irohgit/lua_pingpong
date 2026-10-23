@@ -1,11 +1,13 @@
 -- CONSTANTS
 local BALL_SIZE = 20
+local BALL_SPEED = 300
 local PADDLE_HEIGHT = 100
 local PADDLE_THICKNESS = BALL_SIZE
 local PADDLE_PADDING = 2*BALL_SIZE
-local PADDLE_SPEED = 150
+local PADDLE_SPEED = BALL_SPEED * 1.1
 local DIGIT_SIZE = BALL_SIZE/2
 local DEBUG_MODE = true -- Master DEBUG Gate: Set to false when releasing
+
 
 -- FUNCTIONS
 local drawDivider, renderDigit
@@ -13,10 +15,9 @@ local drawDivider, renderDigit
 local debug_view = false -- Debug Overlay
 
 local ball_x,ball_y = 100,100 -- Initial Ball Position
-local ball_dx,ball_dy = 500,500 -- Derivative for movement
+local ball_dx,ball_dy = 1,1 -- Derivative for movement
 local paddle_left_y = 0
 local paddle_right_y = 0
-local paddle_speed = 100
 local dividerSegments = 21
 local dividerWidth = 5 
 local joystick_left = nil
@@ -80,6 +81,7 @@ function love.load()
     joystick_left = love.joystick.getJoysticks()[1]
     joystick_right = love.joystick.getJoysticks()[2]
 end
+
 function love.draw()
     love.graphics.print("Hello World", 400,400)
     --Store Window Size
@@ -90,10 +92,8 @@ function love.draw()
     -- Draw Ball
     love.graphics.rectangle("fill",ball_x,ball_y,BALL_SIZE,BALL_SIZE) -- Mode is fill or line
     -- Draw Paddle Left and Right Paddles
-    local paddle_left_x = PADDLE_PADDING; -- Derive x as the x value depends on window width.
-    love.graphics.rectangle("fill",paddle_left_x,paddle_left_y,PADDLE_THICKNESS, PADDLE_HEIGHT)
-    local paddle_right_x = window_width_draw - PADDLE_PADDING - PADDLE_THICKNESS
-    love.graphics.rectangle("fill",paddle_right_x,paddle_right_y,PADDLE_THICKNESS, PADDLE_HEIGHT)
+    love.graphics.rectangle("fill",getPaddleLeftX(),paddle_left_y,PADDLE_THICKNESS, PADDLE_HEIGHT)
+    love.graphics.rectangle("fill",getPaddleRightX(window_width_draw),paddle_right_y,PADDLE_THICKNESS, PADDLE_HEIGHT)
     
     -- TODO: Display scores larger than 9
     -- Draw Player 1 Score
@@ -103,32 +103,47 @@ function love.draw()
 
     debugOnly(drawDebug)
 end
+
 function love.update(dt)
     --JOB 0:
     window_width = love.graphics.getWidth()
     window_height = love.graphics.getHeight()
     --JOB : Update the ball's x position 
-    local ball_newx = ball_x + ball_dx*dt
-    if ball_newx < 0 or ball_newx + BALL_SIZE >= window_width then
+    local ball_newx = ball_x + ball_dx * dt * BALL_SPEED 
+    local hits_paddle = hitPaddle(getBallRect(ball_newx,ball_y), window_width)
+    local passed_right_edge = ball_newx + BALL_SIZE > window_width
+    local passed_left_edge = ball_newx < 0 
+    
+    if hits_paddle then
+        ball_dx = -ball_dx
+    elseif passed_left_edge then
+        ball_dx = -ball_dx
+    elseif passed_right_edge then
         ball_dx = -ball_dx
     else
         ball_x = ball_newx
     end
+
     
     --JOB : Update the ball's y position 
-    local ball_newy = ball_y + ball_dy*dt
-    if ball_newy < 0 or ball_newy + BALL_SIZE >= window_height then
-        ball_dy = -ball_dy
+    local ball_newy = ball_y + ball_dy*dt*BALL_SPEED
+    local hit_ceiling = ball_newy < 0
+    local hit_floor = ball_newy + BALL_SIZE >= window_height
+    local hit_paddle = hitPaddle(getBallRect(ball_x,ball_newy),window_width)
+
+    if hit_ceiling or hit_floor or hit_paddle then
+        ball_dy = -ball_dy -- Bounce Vertically
     else
         ball_y = ball_newy
     end
+
     -- TODO: ball collision with the paddles 
-    -- TODO: limit paddle movement to within the screen
     -- TODO: score system
     -- INPUT
     paddle_left_y = movePaddle(paddle_left_y,getInputDirection("w","s",joystick_left),dt,window_height)
     paddle_right_y = movePaddle(paddle_right_y,getInputDirection("up","down",joystick_right),dt,window_height)
-end --END UPDATE FUNCTION
+end 
+--END UPDATE FUNCTION
 
 function drawDivider(segments,window_width,window_height)
     --There are n equal segments we only draw every other piece. 
@@ -173,3 +188,40 @@ function clamp (current_y, window_start, window_height)
     return math.max(window_start,math.min(current_y,window_height))
 end -- END clamp function
 
+function getPaddleLeftX()
+    return PADDLE_PADDING
+end
+
+function getPaddleRightX(window_width)
+    return window_width - PADDLE_PADDING - PADDLE_THICKNESS
+end
+
+-- Collision 
+function checkCollision(rectA,rectB)
+    -- Job1: X axis overlap?
+    local collision_x_axis = rectA.x + rectA.w >= rectB.x and rectB.x + rectB.w >= rectA.x
+    --Job2: Y axis overlap?
+    local collision_y_axis = rectA.y + rectA.h >= rectB.y and rectB.y + rectB.h >= rectA.y
+    --Job3: Return if collision on both axis
+    return collision_x_axis and collision_y_axis
+end
+
+function Struct_NewRect(top_left_x,top_left_y,width,height)
+    return {x = top_left_x, y = top_left_y, w = width, h = height}
+end
+
+function getBallRect(x,y)
+    return Struct_NewRect(x,y,BALL_SIZE,BALL_SIZE)
+end
+
+function getLeftPaddleRect()
+    return Struct_NewRect(getPaddleLeftX(),paddle_left_y,PADDLE_THICKNESS,PADDLE_HEIGHT)
+end
+
+function getRightPaddleRect(window_width)
+    return Struct_NewRect(getPaddleRightX(window_width),paddle_right_y,PADDLE_THICKNESS,PADDLE_HEIGHT)
+end
+
+function hitPaddle(ballRect, window_width)
+    return checkCollision(ballRect,getLeftPaddleRect()) or checkCollision(ballRect,getRightPaddleRect(window_width))
+end
