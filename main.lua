@@ -6,6 +6,7 @@ local PADDLE_THICKNESS = BALL_SIZE
 local PADDLE_PADDING = 2*BALL_SIZE
 local PADDLE_SPEED = BALL_SPEED * 1.1
 local DIGIT_SIZE = BALL_SIZE/2
+local WIN_SCORE = 7
 local DEBUG_MODE = true -- Master DEBUG Gate: Set to false when releasing
 
 
@@ -30,7 +31,6 @@ local top_of_paddle_left = 0
 local top_of_paddle_right = 0
 local score_left = 0
 local score_right = 0
-
 local digits = {
    [0] = {{1,1,1}, {1,0,1}, {1,0,1}, {1,0,1}, {1,1,1}},
    [1] = {{0,1,0}, {1,1,0}, {0,1,0}, {0,1,0}, {0,1,0}},
@@ -80,6 +80,7 @@ end
 function love.load()
     joystick_left = love.joystick.getJoysticks()[1]
     joystick_right = love.joystick.getJoysticks()[2]
+    resetBall(-1)
 end
 
 function love.draw()
@@ -161,6 +162,8 @@ end -- END clamp function
 function getPaddleLeftX()
     return PADDLE_PADDING
 end
+    ball_dy = direction
+    ball_dy = direction
 
 function getPaddleRightX(window_width)
     return window_width - PADDLE_PADDING - PADDLE_THICKNESS
@@ -179,7 +182,6 @@ end
 function Struct_NewRect(top_left_x,top_left_y,width,height)
     return {x = top_left_x, y = top_left_y, w = width, h = height}
 end
-
 function getBallRect(x,y)
     return Struct_NewRect(x,y,BALL_SIZE,BALL_SIZE)
 end
@@ -205,9 +207,12 @@ function updateBallX(dt)
     if hit_paddle then
         ball_dx = -ball_dx
     elseif passed_left_edge then
-        ball_dx = -ball_dx
+        --Increase Score
+        score_right = score_right + 1
+        resetBall(-1)
     elseif passed_right_edge then
-        ball_dx = -ball_dx
+        score_left = score_left + 1
+        resetBall(1)
     else
         ball_x = ball_newx
     end
@@ -228,4 +233,21 @@ end
 function updatePaddles(dt)
     paddle_left_y = movePaddle(paddle_left_y,getInputDirection("w","s",joystick_left),dt,window_height)
     paddle_right_y = movePaddle(paddle_right_y,getInputDirection("up","down",joystick_right),dt,window_height)
+end
+
+function resetBall(direction)
+    -- Spawn ball in centre of screen
+    local center_x,center_y = getMiddleOfScreen()
+    ball_x = center_x - BALL_SIZE / 2
+    ball_y = center_y - BALL_SIZE / 2
+    --Serve to player who conceded 
+    ball_dx = direction 
+    --Random vertical direction so serves vary
+    ball_dy = love.math.random(2) == 1 and 1 or -1
+
+end
+
+function getMiddleOfScreen()
+    local width, height = love.graphics.getDimensions()
+    return width/2, height/2
 end
